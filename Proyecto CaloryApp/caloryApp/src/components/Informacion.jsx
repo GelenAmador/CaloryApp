@@ -116,7 +116,7 @@ function Informacion() {
     <div
         style={{
         width: "900px",
-        height: "390px",
+        height: "400px",
         backgroundColor: "rgba(255, 255, 255, 0.80)",
         borderRadius: "20px",
         marginRight: "50px",
