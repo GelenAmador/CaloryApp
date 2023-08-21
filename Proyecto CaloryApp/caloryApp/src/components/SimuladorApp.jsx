@@ -273,6 +273,38 @@ function SimuladorApp() {
 
                 chartRef.current = newChart;
 
+
+                const ctxz = document.getElementById("myChart2").getContext("2d");
+
+                // Crear la gráfica con los datos dinámicos
+                const chart = new Chart(ctxz, {
+                    type: "line",
+                    data: {
+                        labels: ["1 año", "5 años", "10 años", "15 años", "Otros"],
+                        datasets: [
+                            {
+                                label: "Calorias calculadas",
+                                data: [dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas],
+                                borderColor: "rgba(75, 192, 192, 1)",
+                                borderWidth: 1,
+                                fill: false,
+                            },
+                            {
+                                label: "Calorias Ideales",
+                                data: [dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales],
+                                borderColor: "rgba(255, 99, 132, 1)",
+                                borderWidth: 1,
+                                fill: false,
+                            },
+                        ],
+                    },
+                });
+
+                // Destruir la instancia de la gráfica al desmontar el componente
+                return () => {
+                    chart.destroy();
+                };
+
                 });
             })
             .catch((error) => {
@@ -340,13 +372,24 @@ function SimuladorApp() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: "70px" }}>
+            <div >
+                <div style={{ width: "630px", height: "450px", backgroundColor: "rgba(255, 255, 255, 0.80)", borderRadius: "20px"}}>
+                    <div style={{ width: "630px", height: "67px", backgroundColor: "rgba(52, 141, 114, 0.67)", borderRadius: "20px"}}>
+                        <h1 style={{ fontSize: "27px", textAlign: "center", lineHeight: "67px", margin: "0" }}>Gráfica cambio de peso</h1>
+                    </div>
+                    <canvas id="myChart"></canvas> 
 
-            <div style={{ width: "630px", height: "450px", backgroundColor: "rgba(255, 255, 255, 0.80)", borderRadius: "20px"}}>
-                <div style={{ width: "630px", height: "67px", backgroundColor: "rgba(52, 141, 114, 0.67)", borderRadius: "20px"}}>
-                    <h1 style={{ fontSize: "27px", textAlign: "center", lineHeight: "67px", margin: "0" }}>Gráfica</h1>
                 </div>
-                <canvas id="myChart"></canvas> 
+
+                <br></br>
+                <div style={{ width: "630px", height: "450px", backgroundColor: "rgba(255, 255, 255, 0.80)", borderRadius: "20px"}}>
+                    <div style={{ width: "630px", height: "67px", backgroundColor: "rgba(52, 141, 114, 0.67)", borderRadius: "20px"}}>
+                        <h1 style={{ fontSize: "27px", textAlign: "center", lineHeight: "67px", margin: "0" }}>Gráfica comparativa</h1>
+                    </div>
+                    <canvas id="myChart2"></canvas> 
+                </div>
             </div>
+
 
             <div  style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: "70px" }}>
                 <div>
