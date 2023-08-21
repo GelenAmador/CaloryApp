@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Chart from "chart.js/auto"; 
 import { db } from "./App"; 
 import NormalImagen from "../img/Normal.jpg";
@@ -16,12 +16,45 @@ import ObesoImagen from "../img/OBESO.jpg";
 
 function SimuladorApp() {
     const [años, setAños] = useState(0);
+    const [añosArreglo, setAñosArreglo] = useState([]);
     const [message, setMessage] = useState("");
     const [message2, setMessage2] = useState("");
     const [infoData, setInfoData] = useState("")
     const [NuevaEdad, setNuevaEdad] = useState(0);
-    const [PesoNuevo, setPesoNuevo] = useState(0);
+    const [PesoNuevo, setPesoNuevo] = useState([]);
     const [imagen, setImagen] = useState("");
+    const [PesoImagen, setPesoImagen] = useState(0);
+    const chartRef = useRef(null); 
+
+    const initializeChart = (añosArregloAs,) => {
+
+        const combinedDataAños = [0, ...añosArregloAs];
+        console.log(PesoNuevo)
+        const ctx = document.getElementById("myChart").getContext("2d");
+
+        // Crear la gráfica con los datos dinámicos
+        const chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: combinedDataAños,
+                datasets: [
+                    {
+                        label: "Peso ",
+                        data: PesoNuevo,
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        backgroundColor: "rgba(75, 192, 192, 1)",
+                        pointStyle: 'circle',
+                        pointRadius: 10,
+                        pointHoverRadius: 15
+                    },
+                    
+                ],
+            },
+        });
+
+        return chart; // Return the chart instance
+    };
+
 
     useEffect(() => {
         db.collection('Calorias')
@@ -43,7 +76,14 @@ function SimuladorApp() {
                     const diferenciaCalorias = dataCaloriasIdeales - dataCaloriasCalculadas;
                     const gananciaPerdidaPeso = (diferenciaCalorias / 7700) * años;
                     const pesoActual = parseFloat(parseInt(dataPeso) - gananciaPerdidaPeso* años).toFixed(2);
-                    setPesoNuevo(pesoActual);
+                    setPesoImagen(pesoActual);
+                    setPesoNuevo(prevPesoNuevo => {
+                        if (prevPesoNuevo.includes(pesoActual)) {
+                            return prevPesoNuevo; 
+                        }
+                        return [...prevPesoNuevo, pesoActual];
+                    });
+            
 
                     if(infoData.Sexo == "F"){
                     switch (true) {
@@ -221,70 +261,82 @@ function SimuladorApp() {
                             break;
                     }
                 }
-                    const ctx = document.getElementById("myChart").getContext("2d");
+                    
+                if (chartRef.current) {
+                    // Destroy the previous chart instance if it exists
+                    chartRef.current.destroy();
 
-                    // Crear la gráfica con los datos dinámicos
-                    const chart = new Chart(ctx, {
-                        type: "line",
-                        data: {
-                            labels: ["1 año", "5 años", "10 años", "15 años", "Otros"],
-                            datasets: [
-                                {
-                                    label: "Calorias calculadas",
-                                    data: [dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas, dataCaloriasCalculadas],
-                                    borderColor: "rgba(75, 192, 192, 1)",
-                                    borderWidth: 1,
-                                    fill: false,
-                                },
-                                {
-                                    label: "Calorias Ideales",
-                                    data: [dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales, dataCaloriasIdeales],
-                                    borderColor: "rgba(255, 99, 132, 1)",
-                                    borderWidth: 1,
-                                    fill: false,
-                                },
-                            ],
-                        },
-                    });
+                } 
 
-                    // Destruir la instancia de la gráfica al desmontar el componente
-                    return () => {
-                        chart.destroy();
-                    };
+                // Create the new chart instance
+                const newChart = initializeChart( añosArreglo);
+
+                chartRef.current = newChart;
+
                 });
             })
             .catch((error) => {
                 console.error('Error al obtener el registro más reciente:', error);
             });
-    }, [años, imagen]); 
+    }, [años, PesoImagen]); 
 
-    
+    const handleAñosClick = (newAños) => {
+        setAños(newAños);
+        setAñosArreglo(prevAñosArreglo => [...prevAñosArreglo, newAños]);
+    };
+
     return (
     <div className="App">
     
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
             <div style={{ paddingTop: "40px", width: "160px"}}>
                 <button type="button" class="btn btn" style={{ backgroundColor: "rgba(52, 141, 114, 0.67)", color: "#FFFFFF", border: "1px solid #000" }} 
-                onClick={(event) => {setAños(1)}} > 1 año</button>
+                onClick={(event) => {handleAñosClick(1) }} > 1 año</button>
             </div>
             <div style={{ paddingTop: "40px", width: "160px" }}>
                 <button type="button" class="btn btn" style={{ backgroundColor: "rgba(52, 141, 114, 0.67)", color: "#FFFFFF", border: "1px solid #000" }} 
-                onClick={(event) => {setAños(5)}}>5 años</button>
+                onClick={(event) => {handleAñosClick(5)}}>5 años</button>
             </div>
             <div style={{ paddingTop: "40px", width: "160px" }}>
                 <button type="button" class="btn btn" style={{ backgroundColor: "rgba(52, 141, 114, 0.67)", color: "#FFFFFF", border: "1px solid #000" }}
-                onClick={(event) => {setAños(10)}}>10 años</button>
+                onClick={(event) => {handleAñosClick(10)}}>10 años</button>
             </div>
             <div style={{ paddingTop: "40px", width: "160px" }}>
                 <button type="button" class="btn btn" style={{ backgroundColor: "rgba(52, 141, 114, 0.67)", color: "#FFFFFF", border: "1px solid #000" }} 
-                onClick={(event) => {setAños(15)}}>15 años</button>
+                onClick={(event) => {handleAñosClick(15)}}>15 años</button>
             </div>
             <div style={{ paddingTop: "40px", width: "160px", border:"2px"}}>
-                <input type="text" className="form-control border border-2" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" placeholder="Ingrese otros años" maxLength="2" onKeyPress={(event) => {const charCode = event.which ? event.which : event.keyCode; if (charCode < 48 || charCode > 57)
-                {event.preventDefault();}}}
-                onInput={(event) => {const inputValue = event.target.value;if (inputValue.trim() === "") {event.target.value = "0" }}}
-                onChange={(event) => {const selectedValue = event.target.value; setAños(parseInt(selectedValue));}}/>
-            </div>
+            <input
+                type="text"
+                className="form-control border border-2"
+                aria-label="Sizing example input"
+                aria-describedby="inputGroup-sizing-sm"
+                placeholder="Ingrese otros años"
+                maxLength="2"
+                onKeyPress={(event) => {
+                    const charCode = event.which ? event.which : event.keyCode;
+                    if (charCode < 48 || charCode > 57) {
+                        event.preventDefault();
+                    }
+
+                    if (charCode === 13) {
+                        const selectedValue = event.target.value;
+                        handleAñosClick(parseInt(selectedValue));
+
+                        event.target.value = "";
+                    }
+                }}
+                onInput={(event) => {
+                    const inputValue = event.target.value;
+                    if (inputValue.trim() === "") {
+                        event.target.value = "0";
+                    }
+                }}
+            />
+        </div>
+
+
+
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: "70px" }}>
@@ -313,7 +365,7 @@ function SimuladorApp() {
                     <p style={{ padding: "5px 25px 0px" }}>
                         Edad: {NuevaEdad} años<br></br>
                         Altura: {infoData.Altura} cm<br></br>
-                        Peso: {PesoNuevo} kg
+                        Peso: {PesoImagen} kg
                     </p>
                     <img
                     src={imagen}
